@@ -1,3 +1,3 @@
 import pandas as pd
 
-df = pd.DataFrame("BaseDatos.csv")
+df = pd.read_excel("BaseDatos.csv")
