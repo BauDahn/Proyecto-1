@@ -1,2 +1,3 @@
-# main del proyecto
-print('Hola mundo')
+import pandas as pd
+
+df = pd.DataFrame("BaseDatos.csv")
