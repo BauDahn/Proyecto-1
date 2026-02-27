@@ -16,7 +16,7 @@ Explicabilidad: Obtener un modelo que pueda explicar el motivo por el que devuel
 
 El proyecto sigue una arquitectura modular para separar la limpieza de datos, el entrenamiento del modelo y la interfaz gráfica.
 
-text
+```text
 proyecto_vascular/
 │
 ├── data/                   # Carpeta para los datasets (ignorado en .gitignore)
