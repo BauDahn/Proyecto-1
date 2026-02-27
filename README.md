@@ -8,9 +8,9 @@ Esta predicción se realiza basándose en las siguientes variables de entrada: e
 El propósito final es desarrollar la base del software que provea un servicio a médicos para que el diagnóstico de un paciente se pueda hacer con mayor seguridad
 
 ## Objetivos
-Precisión y Tiempo: Entrenar un modelo (iniciando con regresión logística y explorando redes neuronales) con los datos reales de clínicas en un plazo de 3 meses que describa con un 75% de precisión el tipo de tratamiento adecuado.
-Interactividad: Crear una interfaz interactiva para el usuario donde pueda cargar datos de un paciente, o un dataset entero y nuestro modelo devuelva un diagnóstico adecuado
-Explicabilidad: Obtener un modelo que pueda explicar el motivo por el que devuelve cierto diagnóstico
+**Precisión y Tiempo: Entrenar un modelo (iniciando con regresión logística y explorando redes neuronales) con los datos reales de clínicas en un plazo de 3 meses que describa con un 75% de precisión el tipo de tratamiento adecuado.
+**Interactividad: Crear una interfaz interactiva para el usuario donde pueda cargar datos de un paciente, o un dataset entero y nuestro modelo devuelva un diagnóstico adecuado
+**Explicabilidad: Obtener un modelo que pueda explicar el motivo por el que devuelve cierto diagnóstico
 
 ## Arquitectura y Estructura del Repositorio
 
