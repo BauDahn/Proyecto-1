@@ -41,7 +41,7 @@ def generar_muestra_bootstrap(X, y):
     return X_train, y_train, X_test, y_test
 
 # Integración a la validación
-def evaluar_con_bootstrap(X, y, iteraciones=100):
+def evaluar_con_bootstrap(X, y, iteraciones=200):
     metricas = []
     
     for i in range(iteraciones):
