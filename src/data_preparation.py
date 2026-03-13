@@ -34,6 +34,7 @@ df["TTO"] = df["TTO"].astype('Int64').astype("category")
 df["FORMA INTERV"] = df["FORMA INTERV"].astype(bool)
 
 df.drop(columns=[df.columns[0]], inplace=True)
+df.drop(columns=[df.columns[-1]], inplace=True)
 
 
 output_dir = "../data/processed/"
