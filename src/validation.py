@@ -1,5 +1,8 @@
+import numpy as np
+import pandas as pd
+from tree import DecisionTree
+import train_model
 import random
-import train_model.py
 
 def generar_muestra_bootstrap(X, y):
     '''
@@ -40,21 +43,71 @@ def generar_muestra_bootstrap(X, y):
             
     return X_train, y_train, X_test, y_test
 
-# Integración a la validación
-def evaluar_con_bootstrap(X, y, iteraciones=200):
+
+def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=10, min_samples=5):
     metricas = []
     
     for i in range(iteraciones):
         # Generamos los datos de esta simulación
         X_tr, y_tr, X_te, y_te = generar_muestra_bootstrap(X, y)
+
+        X_tr, y_tr = np.array(X_tr), np.array(y_tr)
+        X_te, y_te = np.array(X_te), np.array(y_te)
+
+        if tipo_modelo == "tree":
+            # Lógica para el modelo de árbol
+            modelo = DecisionTree(min_samples=10, max_depth=15)
+            modelo.fit(X_tr, y_tr)
+            predicciones = modelo.predict(X_te)
+            exactitud = np.mean(predicciones == y_te)
         
-        pesos, sesgos = entrenar_regresion_logistica(X_tr, y_tr)
+        elif tipo_modelo == "logistic":
+            # Lógica para la regresión logística.
+            pesos, sesgos = train_model.entrenar_regresion_logistica(X_tr, y_tr)
         
-        # Evaluamos con el set de pacientes que no fue recogido en la muestra bootstrap
-        exactitud = calcular_exactitud(X_te, y_te, pesos, sesgos)
+            # Evaluamos con el set de pacientes que no fue recogido en la muestra bootstrap
+            exactitud = train_model.calcular_exactitud(X_te, y_te, pesos, sesgos)
+        
         metricas.append(exactitud)
+        
+
+        if (i + 1) % 10 == 0:
+            print(f'Iteracion {i} completada...')
 
     # Ahora hacemos la media de las métricas como el optimismo que tenemos que restarle al RMSE de la muestra ajustada
-    media_diferencias = sum(metricas) / len(metricas) 
 
-    return media_diferencias
+    return np.mean(metricas), np.std(metricas)
+
+
+if __name__ == '__main__':
+    df = pd.read_csv('../data/processed/processed_data.csv')
+    df_alt = pd.read_csv('../data/processed/alternative_data.csv')
+
+    X_df = df.drop(columns=["TTO"])
+    y_series = df["TTO"]
+
+    X_alt_df = df_alt.drop(columns=["TTO"])
+    y_alt_series = df_alt["TTO"]
+
+
+    X = X_df.to_numpy()
+    y = y_series.to_numpy().astype(int)
+
+    X_alt = X_alt_df.to_numpy()
+    y_alt = y_alt_series.to_numpy().astype(int)
+    
+
+    # Testeo del árbol
+    print("Evaluación del primer árbol")
+    media_tree, std_tree = evaluar_con_bootstrap(X, y, tipo_modelo="tree", max_depth=5, min_samples=10)
+    print("Primer árbol entrenado...")
+    print("-----------------------")
+    print("Evaluación del segundo árbol")
+    media_alt_tree, std_alt_tree = evaluar_con_bootstrap(X_alt, y_alt, tipo_modelo="tree", max_depth=3, min_samples=10)
+    print("Segundo árbol entrenado")
+    print("-----------------------")
+    print("\nResultados:\n")
+    print(f"Modelo: Árbol con todos los pacientes.\nPrecisión: {media_tree*100:.2f}% (+/- {std_tree*100:.2f}%)")
+    print("\n----------------\n")
+    print(f"Modelo: Árbol solo con pacientes con diámetro.\nPrecisión: {media_alt_tree*100:.2f}% (+/- {std_alt_tree*100:.2f}%)")
+
