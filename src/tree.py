@@ -1,21 +1,21 @@
 import numpy as np
+try:
+    from . import tree_core
+except ImportError:
+    import tree_core
 
 def calculate_gini(y):
     '''
-    Calcula la impureza de Gini para un vector de etiquetas y
+    Calcula la impureza de Gini para un vector de etiquetas y usando el motor hecho en C++
     '''
-    m = len(y)
-    if m == 0:
-        return 0
+    if len(y) == 0: # Si no hay muestras en el nodo actual
+        return 0.0 # Devuelve 0
     
-    # Conteo de cuantas veces sale cada tratamiento
-    _, counts = np.unique(y, return_counts=True)
-
-    # Cálculo de las probabilidades
-    probabilidades = counts / m
-    gini = 1 - np.sum(probabilidades ** 2)
-
-    return gini
+    # En otro caso, convierto los tipos para poder pasarlo a C++
+    y_cpp = np.ascontiguousarray(y).astype(np.int32)
+    
+    # Llamamos a la función de C++
+    return tree_core.calcular_gini(y_cpp)
 
 class Node:
 
