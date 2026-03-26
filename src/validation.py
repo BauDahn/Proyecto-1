@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from tree import DecisionTree
 from explainability import tree_visualizer
-import train_model
+import Regression
 import random
 
 def generar_muestra_bootstrap(X, y):
@@ -64,10 +64,17 @@ def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=1
         
         elif tipo_modelo == "logistic":
             # Lógica para la regresión logística.
-            pesos, sesgos = train_model.entrenar_regresion_logistica(X_tr, y_tr)
+            pesos, sesgos, _ = train_model.entrenar_regresion_logistica(X_tr, y_tr)
         
             # Evaluamos con el set de pacientes que no fue recogido en la muestra bootstrap
-            exactitud = train_model.calcular_exactitud(X_te, y_te, pesos, sesgos)
+            # Primero sacamos las probabilidades (0.0 a 1.0)
+            probabilidades = Regression.predecir_probabilidades(X_te, pesos, sesgos)
+
+            # Las convertimos a decisiones firmes (0 o 1) con el umbral de 0.5
+            predicciones_firmes = (probabilidades >= 0.5).astype(int)
+
+            # Calculamos la exactitud (Accuracy) comparando con la realidad (y_te)
+            exactitud = np.mean(predicciones_firmes == y_te)
         
         metricas.append(exactitud)
         
