@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from tree import DecisionTree
+from explainability import tree_visualizer
 import train_model
 import random
 
@@ -44,7 +45,7 @@ def generar_muestra_bootstrap(X, y):
     return X_train, y_train, X_test, y_test
 
 
-def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=10, min_samples=5):
+def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=10, min_samples=5, cantidad_minima_en_nodo=1):
     metricas = []
     
     for i in range(iteraciones):
@@ -56,7 +57,7 @@ def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=1
 
         if tipo_modelo == "tree":
             # Lógica para el modelo de árbol
-            modelo = DecisionTree(min_samples=10, max_depth=15)
+            modelo = DecisionTree(min_samples=10, max_depth=15, cantidad_minima_en_nodo=cantidad_minima_en_nodo)
             modelo.fit(X_tr, y_tr)
             predicciones = modelo.predict(X_te)
             exactitud = np.mean(predicciones == y_te)
@@ -99,11 +100,11 @@ if __name__ == '__main__':
 
     # Testeo del árbol
     print("Evaluación del primer árbol")
-    media_tree, std_tree = evaluar_con_bootstrap(X, y, tipo_modelo="tree", max_depth=5, min_samples=10)
+    media_tree, std_tree = evaluar_con_bootstrap(X, y, tipo_modelo="tree", max_depth=5, min_samples=10, cantidad_minima_en_nodo=10)
     print("Primer árbol entrenado...")
     print("-----------------------")
     print("Evaluación del segundo árbol")
-    media_alt_tree, std_alt_tree = evaluar_con_bootstrap(X_alt, y_alt, tipo_modelo="tree", max_depth=3, min_samples=10)
+    media_alt_tree, std_alt_tree = evaluar_con_bootstrap(X_alt, y_alt, tipo_modelo="tree", max_depth=3, min_samples=10, cantidad_minima_en_nodo=5)
     print("Segundo árbol entrenado")
     print("-----------------------")
     print("\nResultados:\n")
@@ -111,3 +112,20 @@ if __name__ == '__main__':
     print("\n----------------\n")
     print(f"Modelo: Árbol solo con pacientes con diámetro.\nPrecisión: {media_alt_tree*100:.2f}% (+/- {std_alt_tree*100:.2f}%)")
 
+    print("\nVisualización del árbol generado...")
+
+    # Entrenamos un árbol final para visualizarlo
+    arbol_final = DecisionTree(max_depth=7, min_samples=8, cantidad_minima_en_nodo=5) 
+    arbol_final.fit(X_alt, y_alt)
+
+    # Primero agarramos los nombres de las columnas del dataset
+    nombres_columnas = X_alt_df.columns.tolist()
+
+    # Ahora generamos el código dot para visualizar
+    dot_code = tree_visualizer(arbol_final, feature_names=nombres_columnas)
+
+    # Lo guardamos en un archivo para poder verlo después
+    with open("resultado_arbol.dot", "w") as f:
+        f.write(dot_code)
+
+    print("\nVisualización generada en 'resultado_arbol.dot'.")

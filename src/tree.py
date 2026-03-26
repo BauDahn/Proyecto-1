@@ -19,19 +19,23 @@ def calculate_gini(y):
 
 class Node:
 
-    def __init__(self, feature=None, threshold=None, left=None, right=None, *, value=None):
+    def __init__(self, feature=None, threshold=None, left=None, right=None, *, value=None, gini=None, pacientes_totales=None):
         '''
         Feature refiere al índice de la columna usada para separar
         Threshold refiere al valor de corte de la feature
         Left refiere al nodo hijo de la izquierda
         Right refiere al nodo hijo de la derecha
         Value refiere a la clase predicha
+        gini refiere al gini del nodo actual
+        pacientes_totales refiere a la cantidad de pacientes que hay en ese nodo
         '''
         self.feature = feature
         self.threshold = threshold
         self.left = left
         self.right = right
         self.value = value
+        self.gini = gini
+        self.pacientes_totales = pacientes_totales
 
     def is_leaf_node(self):
         return self.value is not None
@@ -39,9 +43,10 @@ class Node:
 
 class DecisionTree:
 
-    def __init__(self, min_samples=2, max_depth=200):
+    def __init__(self, min_samples=2, max_depth=200, cantidad_minima_en_nodo=1):
         self.min_samples = min_samples
         self.max_depth = max_depth
+        self.cantidad_minima_en_nodo = cantidad_minima_en_nodo
         self.root = None
     
     def fit(self, X, y):
@@ -69,38 +74,15 @@ class DecisionTree:
 
     def _best_split(self, X, y):
         '''
-        La función devuelve el índice de la mejor columna,
-        el mejor umbral y la ganancia obtenida.
+        La función devuelve el índice de la mejor columna y el mejor umbral, trabaja en C++.
         '''
-        best_gain = -1
-        split_idx = -1
-        split_threshold = -1
-
-        parent_gini = calculate_gini(y)
-
-        for columna in range(X.shape[1]): # Por cada variable clínica
-            valores_columna = X[:, columna] # Me quedo con todos los valores
-
-            umbrales_unicos = np.unique(valores_columna) # Busco los valores únicos (para probarlos como umbrales)
-
-            for threshold in umbrales_unicos: # Por cada uno de estos valores únicos
-                mask = valores_columna <= threshold # Creo una máscara divisoria (los valores por encima y los de debajo)
-
-                y_izq = y[mask] # Los que están por debajo o igual al threshold
-                y_der = y[~mask] # Los que pasan el threshold
-
-                # Un condicional para el caso de que el corte no haya dividido a nadie
-                if len(y_izq) == 0 or len(y_der) == 0:
-                    continue
-
-                gain = self._information_gain(y, y_izq, y_der, parent_gini)
-
-                if gain > best_gain:
-                    best_gain = gain
-                    split_idx = columna
-                    split_threshold = threshold
+        X_cpp = np.ascontiguousarray(X).astype(np.float64)
+        y_cpp = np.ascontiguousarray(y).astype(np.int32)
         
-        return split_idx, split_threshold
+        # Llamada a C++
+        feat_idx, threshold = tree_core.encontrar_mejor_corte(X_cpp, y_cpp, self.cantidad_minima_en_nodo)
+        
+        return feat_idx, threshold
 
     def _most_common_label(self, y):
         '''
@@ -113,19 +95,22 @@ class DecisionTree:
         Función recursiva que se llama a si misma para ir creando las ramas del árbol
         '''
         n_samples, n_features = X.shape # Me quedo con el número de filas y el número de columnas
+        node_gini = calculate_gini(y)
+        pacientes_totales = n_samples
         n_labels = len(np.unique(y)) # Son la cantidad de clases a las que puede pertenercer una muestra
         
         # Condicional que cubre tres casos: Hay solo una clase, llegamos al tope de profundidad del árbol, o quedan pocos pacientes
         if (depth >= self.max_depth or n_labels == 1 or n_samples < self.min_samples):
             leaf_value = self._most_common_label(y)
-            return Node(value=leaf_value) # Hago que esta rama devuelva la clase más común dentro de esa división
+            return Node(value=leaf_value, gini=node_gini, pacientes_totales=pacientes_totales) # Hago que esta rama devuelva la clase más común dentro de esa división
         
         # Búsqueda del mejor corte
         feat_idx, threshold = self._best_split(X, y)
 
         # Si no se encuentra una división mejor que la actual
-        if feat_idx == -1:
-            return Node(value=self._most_common_label(y))
+        if feat_idx == -1 or feat_idx is None:
+            leaf_value = self._most_common_label(y)
+            return Node(value=leaf_value, gini=node_gini, pacientes_totales=pacientes_totales)
 
         # Creación de las divisiones o nodos hijos
         '''
@@ -148,7 +133,7 @@ class DecisionTree:
         left_child = self._grow_tree(nodo_izq, y_izq, depth + 1)
         right_child = self._grow_tree(nodo_der, y_der, depth + 1)
 
-        return Node(feature=feat_idx, threshold=threshold, left=left_child, right=right_child)
+        return Node(feature=feat_idx, threshold=threshold, left=left_child, right=right_child, gini=node_gini, pacientes_totales=pacientes_totales)
 
 
     def predict(self, X):
