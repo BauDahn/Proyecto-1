@@ -17,3 +17,7 @@ data/raw/*.csv
 # Sistema
 .DS_Store
 Thumbs.db
+
+.idea/
+.Rhistory
+.venv/

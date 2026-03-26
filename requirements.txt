@@ -1,4 +1,4 @@
 pandas
 numpy
 openpyxl
-os
+#Quitamos el os porque ya viene instalado con python
