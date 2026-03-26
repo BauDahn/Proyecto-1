@@ -93,7 +93,7 @@ def entrenar_regresion_logistica(X, y, learning_rate=0.01, num_iteraciones=1000)
         b = b - learning_rate * db
 
         # Imprimimos el coste cada 100 iteraciones para monitorizar
-        if i % 100 == 0:
+        if i % 400 == 0:
             print(f"Iteración {i}: Coste = {coste:.4f}")
 
     return W, b, historial_coste

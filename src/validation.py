@@ -64,7 +64,7 @@ def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=1
         
         elif tipo_modelo == "logistic":
             # Lógica para la regresión logística.
-            pesos, sesgos, _ = train_model.entrenar_regresion_logistica(X_tr, y_tr)
+            pesos, sesgos, _ = Regression.entrenar_regresion_logistica(X_tr, y_tr)
         
             # Evaluamos con el set de pacientes que no fue recogido en la muestra bootstrap
             # Primero sacamos las probabilidades (0.0 a 1.0)
@@ -98,12 +98,12 @@ if __name__ == '__main__':
     y_alt_series = df_alt["TTO"]
 
 
-    X = X_df.to_numpy()
+    X = X_df.to_numpy(dtype=float)
     y = y_series.to_numpy().astype(int)
 
-    X_alt = X_alt_df.to_numpy()
+    X_alt = X_alt_df.to_numpy(dtype=float)
     y_alt = y_alt_series.to_numpy().astype(int)
-    
+
 
     # Testeo del árbol
     print("Evaluación del primer árbol")
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     print("\nVisualización del árbol generado...")
 
     # Entrenamos un árbol final para visualizarlo
-    arbol_final = DecisionTree(max_depth=7, min_samples=8, cantidad_minima_en_nodo=5) 
+    arbol_final = DecisionTree(max_depth=7, min_samples=8, cantidad_minima_en_nodo=5)
     arbol_final.fit(X_alt, y_alt)
 
     # Primero agarramos los nombres de las columnas del dataset
@@ -136,3 +136,26 @@ if __name__ == '__main__':
         f.write(dot_code)
 
     print("\nVisualización generada en 'resultado_arbol.dot'.")
+
+
+    # ==========================================
+
+
+    # Testeo de la Regresión Logística
+    print("\nEvaluación de la primera Regresión Logística")
+    media_log, std_log = evaluar_con_bootstrap(X, y, tipo_modelo="logistic")
+    print("Primera Regresión Logística evaluada...")
+    print("-----------------------")
+
+    print("Evaluación de la segunda Regresión Logística")
+    # Nota: Le pasamos los datos alternativos (X_alt, y_alt)
+    media_alt_log, std_alt_log = evaluar_con_bootstrap(X_alt, y_alt, tipo_modelo="logistic")
+    print("Segunda Regresión Logística evaluada...")
+    print("-----------------------")
+
+    print("\nResultados Regresión Logística:\n")
+    print(
+        f"Modelo: Regresión Logística con todos los pacientes.\nPrecisión: {media_log * 100:.2f}% (+/- {std_log * 100:.2f}%)")
+    print("\n----------------\n")
+    print(
+        f"Modelo: Regresión Logística solo con pacientes con diámetro.\nPrecisión: {media_alt_log * 100:.2f}% (+/- {std_alt_log * 100:.2f}%)")
