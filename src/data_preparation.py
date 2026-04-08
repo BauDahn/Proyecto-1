@@ -57,6 +57,23 @@ def convertir_tipos(df):
     df["CANCER"] = df["CANCER"].astype(bool)
     df["ICC"] = df["ICC"].astype(bool)
     df["EAP"] = df["EAP"].astype(bool)
+
+    '''
+    Con el objetivo de optimizar la capacidad predictiva del modelo sobre la toma de decisiones intervencionistas,
+    se ha procedido a excluir del dataset a los pacientes bajo tratamiento conservador (Clase 0).
+    Esta decisión se fundamenta en que dicho grupo representa a individuos que no alcanzan los criterios clínicos estandarizados para la reparación del aneurisma,
+    definidos por un umbral de diámetro de 5,5 cm en hombres y 4,5 cm en mujeres. 
+    Asimismo, este grupo incluye pacientes con una expectativa de vida muy limitada debido a comorbilidades extremas o neoplasias avanzadas,
+    donde el riesgo quirúrgico supera el beneficio potencial.
+    Al centrar el modelo exclusivamente en la elección entre cirugía abierta y tratamiento endovascular (EVAR),
+    el algoritmo se especializa en predecir la estrategia terapéutica óptima para aquellos pacientes que ya tienen una indicación clara de intervención,
+    eliminando el ruido estadístico que suponen los casos no quirúrgicos.
+    '''
+
+    # Como es un criterior definido en la medicina el hecho de intervenir o no, solo definiremos el tipo de intervencio (1 o 2)
+    # Filtramos para quedarnos solo con los tratamientos 1 y 2
+    df = df[df["TTO"] != 0]
+
     df["TTO"] = df["TTO"].astype('Int64').astype("category")
 
     return df # Limpieza final de otros NaNs menores
