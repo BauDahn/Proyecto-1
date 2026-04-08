@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-from tree import DecisionTree
-from explainability import tree_visualizer
-import Regression
+from Tree.tree import DecisionTree
+from Tree.explainability import tree_visualizer
+from Regression import Regression
 import random
 
 def generar_muestra_bootstrap(X, y):
@@ -80,7 +80,8 @@ def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=1
         
 
         if (i + 1) % 10 == 0:
-            print(f'Iteracion {i} completada...')
+            print(f'\nIteracion {i} completada...\n')
+            print("----------\n")
 
     # Ahora hacemos la media de las métricas como el optimismo que tenemos que restarle al RMSE de la muestra ajustada
 
@@ -88,45 +89,34 @@ def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=1
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('../data/processed/processed_data.csv')
-    df_alt = pd.read_csv('../data/processed/alternative_data.csv')
+    df = pd.read_csv('../data/processed/dataset_clean.csv', sep=';')
 
     X_df = df.drop(columns=["TTO"])
     y_series = df["TTO"]
-
-    X_alt_df = df_alt.drop(columns=["TTO"])
-    y_alt_series = df_alt["TTO"]
 
 
     X = X_df.to_numpy(dtype=float)
     y = y_series.to_numpy().astype(int)
 
-    X_alt = X_alt_df.to_numpy(dtype=float)
-    y_alt = y_alt_series.to_numpy().astype(int)
-
 
     # Testeo del árbol
     print("Evaluación del primer árbol")
-    media_tree, std_tree = evaluar_con_bootstrap(X, y, tipo_modelo="tree", max_depth=5, min_samples=10, cantidad_minima_en_nodo=10)
+    media_tree, std_tree = evaluar_con_bootstrap(X, y, tipo_modelo="tree", max_depth=5, min_samples=10, cantidad_minima_en_nodo=4)
     print("Primer árbol entrenado...")
     print("-----------------------")
-    print("Evaluación del segundo árbol")
-    media_alt_tree, std_alt_tree = evaluar_con_bootstrap(X_alt, y_alt, tipo_modelo="tree", max_depth=3, min_samples=10, cantidad_minima_en_nodo=5)
-    print("Segundo árbol entrenado")
     print("-----------------------")
     print("\nResultados:\n")
     print(f"Modelo: Árbol con todos los pacientes.\nPrecisión: {media_tree*100:.2f}% (+/- {std_tree*100:.2f}%)")
-    print("\n----------------\n")
-    print(f"Modelo: Árbol solo con pacientes con diámetro.\nPrecisión: {media_alt_tree*100:.2f}% (+/- {std_alt_tree*100:.2f}%)")
 
+    '''
     print("\nVisualización del árbol generado...")
 
     # Entrenamos un árbol final para visualizarlo
     arbol_final = DecisionTree(max_depth=7, min_samples=8, cantidad_minima_en_nodo=5)
-    arbol_final.fit(X_alt, y_alt)
+    arbol_final.fit(X, y)
 
     # Primero agarramos los nombres de las columnas del dataset
-    nombres_columnas = X_alt_df.columns.tolist()
+    nombres_columnas = X_df.columns.tolist()
 
     # Ahora generamos el código dot para visualizar
     dot_code = tree_visualizer(arbol_final, feature_names=nombres_columnas)
@@ -136,7 +126,7 @@ if __name__ == '__main__':
         f.write(dot_code)
 
     print("\nVisualización generada en 'resultado_arbol.dot'.")
-
+    '''
 
     # ==========================================
 
@@ -147,15 +137,7 @@ if __name__ == '__main__':
     print("Primera Regresión Logística evaluada...")
     print("-----------------------")
 
-    print("Evaluación de la segunda Regresión Logística")
-    # Nota: Le pasamos los datos alternativos (X_alt, y_alt)
-    media_alt_log, std_alt_log = evaluar_con_bootstrap(X_alt, y_alt, tipo_modelo="logistic")
-    print("Segunda Regresión Logística evaluada...")
-    print("-----------------------")
-
     print("\nResultados Regresión Logística:\n")
     print(
         f"Modelo: Regresión Logística con todos los pacientes.\nPrecisión: {media_log * 100:.2f}% (+/- {std_log * 100:.2f}%)")
     print("\n----------------\n")
-    print(
-        f"Modelo: Regresión Logística solo con pacientes con diámetro.\nPrecisión: {media_alt_log * 100:.2f}% (+/- {std_alt_log * 100:.2f}%)")

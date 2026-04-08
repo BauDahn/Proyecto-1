@@ -2,7 +2,7 @@ import numpy as np
 try:
     from . import tree_core
 except ImportError:
-    import tree_core
+    from . import tree_core
 
 def calculate_gini(y):
     '''

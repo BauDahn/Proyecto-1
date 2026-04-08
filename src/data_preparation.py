@@ -1,59 +1,48 @@
 import pandas as pd
-import numpy as np
-import os
 
-'''
-df = pd.read_csv("../data/raw/RawData.csv", sep=";")
+# 1. CARGA DEL DATASET INICIAL
+# Saltamos la primera fila de códigos para que no ensucie los nombres de columnas 
+df_raw = pd.read_excel('../data/raw/dataset_inicial.xlsx', skiprows=[1])
 
-columnas_faltanes = df.isnull().mean()
-columnas_50 = columnas_faltanes[columnas_faltanes > 0.4]
+# Esta línea elimina espacios invisibles al principio y al final de TODOS los nombres de columnas
+df_raw.columns = df_raw.columns.str.strip()
 
-columnas_a_eliminar = columnas_50.index.tolist()
-df.drop(labels=columnas_a_eliminar, axis=1, inplace=True)
-
-umbral_nulos = 0.4
-porcentaje_nulos_por_fila = df.isnull().sum(axis=1) / len(df.columns)
-df = df[porcentaje_nulos_por_fila < umbral_nulos]
-df = df.reset_index(drop=True)
-
-df["Edad"] = df["Edad"].astype('Int64')
-df["Sexo"] = df["Sexo"].astype(bool)
-df["Fumador"] = df["Fumador"].astype('Int64').astype("category")
-df["Dislipemia"] = df["Dislipemia"].astype(bool)
-df["Diabetes"] = df["Diabetes"].astype(bool)
-df["HTA"] = df["HTA"].astype(bool)
-df["IAM"] = df["IAM"].astype(bool)
-df["ERC"] = df["ERC"].astype(bool)
-df["EPOC"] = df["EPOC"].astype(bool)
-df["ACV"] = df["ACV"].astype(bool)
-df["FA"] = df["FA"].astype(bool)
-df["CANCER"] = df["CANCER"].astype(bool)
-df["ICC"] = df["ICC"].astype(bool)
-df["EAP"] = df["EAP"].astype(bool)
-df["TTO"] = df["TTO"].astype('Int64').astype("category")
-df["FORMA INTERV"] = df["FORMA INTERV"].astype(bool)
-
-df.drop(columns=[df.columns[0]], inplace=True)
-df.drop(columns=[df.columns[-1]], inplace=True)
+# 2. JUSTIFICACIÓN CLÍNICA (Modificaciones del Word)
+# Eliminamos variables que no influyen en la decisión técnica del tratamiento
+# Se descartan: calidad de vida, ocio, social, laboral y fechas
+# También se descartan diámetro y éxito por no ser variables de decisión
 
 
-output_dir = "../data/processed/"
+# 2. DICCIONARIO DE MAPEO ACTUALIZADO 
+mapeo_columnas = {
+    'Edad': 'Edad',
+    'Sexo': 'Sexo',
+    'Fumador': 'Fumador',
+    'Dislipemia': 'Dislipemia',
+    'Diabetes': 'Diabetes',
+    'HTA': 'HTA',
+    'IAM': 'IAM',
+    'ERC': 'ERC',
+    'epoc': 'EPOC',
+    'ACV': 'ACV', # Ahora lo buscamos sin el espacio extra
+    'FA': 'FA',
+    'Antecedentes neoplasia': 'CANCER',
+    'insuficiencia cardiaca': 'ICC',
+    'enfermedad arterial periferica': 'EAP',
+    'tipo de tratamiento': 'TTO'
+}
 
-df.to_csv(os.path.join(output_dir, "processed_data.csv"), index=False)
-'''
+# 3. SELECCIÓN Y LIMPIEZA
 
-# Creación de un dataset alternativo solo con filas que tengan valor en diámetro
-alt_df = pd.read_csv("../data/raw/RawData.csv", sep=";", encoding='latin-1')
+columnas_disponibles = [c for c in mapeo_columnas.keys() if c in df_raw.columns]
+df_final = df_raw[columnas_disponibles].rename(columns=mapeo_columnas)
 
-df_alternative = alt_df[alt_df['Diam AAA pre IQ'].notna()].copy()
+# Eliminamos filas incompletas
+df_final = df_final.dropna()
 
-
-def preparar_datos(df):
-    # Primero borro la columna de nombres y la última.
-    df.drop(columns=[df.columns[0]], inplace=True)
-    df.drop(columns=[df.columns[-1]], inplace=True)
+# 4. FORMATEO FINAL
+def convertir_tipos(df):
     
-    # Luego convierto los tipos:
     df["Edad"] = df["Edad"].astype('Int64')
     df["Sexo"] = df["Sexo"].astype(bool)
     df["Fumador"] = df["Fumador"].astype('Int64').astype("category")
@@ -70,12 +59,10 @@ def preparar_datos(df):
     df["EAP"] = df["EAP"].astype(bool)
     df["TTO"] = df["TTO"].astype('Int64').astype("category")
 
-    df['Diam AAA pre IQ'] = df['Diam AAA pre IQ'].astype(str).str.replace(',', '.')
-    df['Diam AAA pre IQ'] = pd.to_numeric(df['Diam AAA pre IQ'], errors='coerce')
+    return df # Limpieza final de otros NaNs menores
 
-    return df.dropna() # Limpieza final de otros NaNs menores
+# 4. FORMATEO DE TIPOS
+df_cleaned = convertir_tipos(df_final)
 
-df_clean_alt = preparar_datos(df_alternative)
-
-# 4. GUARDAR PARA TESTEAR
-df_clean_alt.to_csv('../data/processed/alternative_data.csv', index=False)
+# 5. GUARDADO
+df_cleaned.to_csv('../data/processed/dataset_clean.csv', index=False, sep=';', encoding='utf-8')
