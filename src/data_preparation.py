@@ -73,6 +73,7 @@ def convertir_tipos(df):
     # Como es un criterior definido en la medicina el hecho de intervenir o no, solo definiremos el tipo de intervencio (1 o 2)
     # Filtramos para quedarnos solo con los tratamientos 1 y 2
     df = df[df["TTO"] != 0]
+    df["TTO"] = df["TTO"] - 1
 
     df["TTO"] = df["TTO"].astype('Int64').astype("category")
 
