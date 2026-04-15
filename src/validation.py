@@ -64,7 +64,7 @@ def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=1
 
         elif tipo_modelo == "logistic":
             # Recogemos W, b, ignoramos coste (_), y recogemos medias y stds
-            pesos, sesgos, _, medias, stds = Regression.entrenar_regresion_logistica(X_tr, y_tr, learning_rate=0.01, num_iteraciones=3000)
+            pesos, sesgos, _, medias, stds = Regression.entrenar_regresion_logistica(X_tr, y_tr, learning_rate=0.01, num_iteraciones=1000)
 
             # Le pasamos las medias y stds del entrenamiento a los pacientes de test
             probabilidades = Regression.predecir_probabilidades(X_te, pesos, sesgos, medias, stds)
