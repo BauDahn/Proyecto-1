@@ -15,6 +15,7 @@ df_raw.columns = df_raw.columns.str.strip()
 
 # 2. DICCIONARIO DE MAPEO ACTUALIZADO 
 mapeo_columnas = {
+    'AAADQoL Text': 'Hospital',
     'Edad': 'Edad',
     'Sexo': 'Sexo',
     'Fumador': 'Fumador',
@@ -37,12 +38,16 @@ mapeo_columnas = {
 columnas_disponibles = [c for c in mapeo_columnas.keys() if c in df_raw.columns]
 df_final = df_raw[columnas_disponibles].rename(columns=mapeo_columnas)
 
+df_final['Hospital'] = df_final['Hospital'].str.replace(r'\d+', '', regex=True)
+df_final['Hospital'] = df_final['Hospital'].str.upper().str.strip()
+
 # Eliminamos filas incompletas
 df_final = df_final.dropna()
 
 # 4. FORMATEO FINAL
 def convertir_tipos(df):
     
+    df["Hospital"] = df["Hospital"].astype('category').cat.codes
     df["Edad"] = df["Edad"].astype('Int64')
     df["Sexo"] = df["Sexo"].astype(bool)
     df["Fumador"] = df["Fumador"].astype('Int64').astype("category")
@@ -84,3 +89,5 @@ df_cleaned = convertir_tipos(df_final)
 
 # 5. GUARDADO
 df_cleaned.to_csv('../data/processed/dataset_clean.csv', index=False, sep=';', encoding='utf-8')
+
+
