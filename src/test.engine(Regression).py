@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.datasets import load_breast_cancer
 from sklearn.preprocessing import StandardScaler
 from Regression.Regression import entrenar_regresion_logistica
 from Regression.Regression import predecir_probabilidades
@@ -10,22 +11,11 @@ from Regression.Regression import predecir_probabilidades
 def comparar():
     # 1. CARGAR LOS DATOS REALES
     print("Cargando base de datos...")
-    try:
-        # Usamos sep=None para que Pandas autodetecte si el archivo usa comas (,) o puntos y comas (;)
-        df = pd.read_csv('../data/processed/dataset_clean.csv', sep=None, engine='python')
-
-        # Limpiamos cualquier espacio en blanco invisible que pueda haber en los nombres de las columnas
-        df.columns = df.columns.str.strip()
-
-        # Comprobación de seguridad para ver qué ha leído realmente
-        print(f"Columnas detectadas: {df.columns.tolist()}")
-    except FileNotFoundError:
-        print("Error: No se encuentra el archivo procesado. Asegúrate de ejecutar esto desde la carpeta 'src/'.")
-        return
+    data = load_breast_cancer()
 
     # Separar variables (X) de la respuesta (y)
-    X = df.drop(columns=["TTO"])
-    y = df["TTO"]
+    X = data.data
+    y = data.target
 
     # 2. SEPARAR EN ENTRENAMIENTO (80%) Y TEST (20%)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
