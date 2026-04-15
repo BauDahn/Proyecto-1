@@ -1,6 +1,28 @@
 import numpy as np
 import pandas as pd
 
+def estandarizar_datos(X, medias=None, desviaciones=None):
+    # Hacemos una copia para no sobreescribir los datos originales
+    X_escalado = np.copy(X).astype(float)
+
+    # 1. Detectar qué columnas son continuas (más de 2 valores diferentes)
+    columnas_continuas = [i for i in range(X.shape[1]) if len(np.unique(X[:, i])) > 2]
+
+    # Si todo es 0 o 1 no hacemos nada
+    if len(columnas_continuas) == 0:
+        return X_escalado, None, None
+
+        # 2. Si estamos Entrenando (no nos han pasado medias previas)
+    if medias is None or desviaciones is None:
+        medias = np.mean(X_escalado[:, columnas_continuas], axis=0)
+        desviaciones = np.std(X_escalado[:, columnas_continuas], axis=0)
+        desviaciones[desviaciones == 0] = 1e-8  # Protección para evitar dividir por cero
+
+    # 3. Aplicamos la fórmula matemática Z-Score a esas columnas concretas
+    X_escalado[:, columnas_continuas] = (X_escalado[:, columnas_continuas] - medias) / desviaciones
+
+    return X_escalado, medias, desviaciones
+
 # Función para inicializar el modelo
 def inicializar_parametros(num_variables):
     # En nuestro caso, 14 variables
@@ -21,16 +43,16 @@ def sigmoide(z):
 
 
 # 3. Función para predecir (Forward Pass)
-def predecir_probabilidades(X, W, b):
-    # X es nuestra matriz de pacientes
-    # Calculamos el "score clínico" (z) multiplicando cada variable por su peso
-    # Matemáticamente es el producto punto (dot product)
-    z = np.dot(X, W) + b
+def predecir_probabilidades(X, W, b, medias=None, desviaciones=None):
+    X = np.asarray(X, dtype=float)
+    # Antes de predecir, estandarizamos al nuevo paciente con las reglas del entrenamiento
+    if medias is not None and desviaciones is not None:
+        X_escalado, _, _ = estandarizar_datos(X, medias, desviaciones)
+    else:
+        X_escalado = np.copy(X).astype(float)
 
-    # Pasamos los scores por la sigmoide para obtener la probabilidad de EVAR (clase 1)
-    probabilidades = sigmoide(z)
-
-    return probabilidades
+    z = np.dot(X_escalado, W) + b
+    return sigmoide(z)
 
 def calcular_coste(y_real, y_predicha):
     # m es el número total de pacientes (filas)
@@ -65,75 +87,72 @@ def calcular_gradientes(X, y_real, y_predicha):
 
 
 def entrenar_regresion_logistica(X, y, learning_rate=0.01, num_iteraciones=1000):
-    # Inicializamos W y b con ceros
-    num_variables = X.shape[1]
+    X = np.asarray(X, dtype=float)
+    y = np.asarray(y, dtype=float)
+
+    # El modelo detecta columnas raras y las estandariza él solo.
+    X_estandarizado, medias, desviaciones = estandarizar_datos(X)
+
+    num_variables = X_estandarizado.shape[1]
     W = np.zeros(num_variables)
     b = 0.0
-
-    # Lista para ir guardando el error y ver si el modelo realmente aprende
     historial_coste = []
 
-    # Bucle de entrenamiento (Descenso de Gradiente)
     for i in range(num_iteraciones):
+        # OJO: Usamos X_estandarizado para todo el entrenamiento
+        z = np.dot(X_estandarizado, W) + b
+        y_predicha = sigmoide(z)
 
-        # PASO A: El modelo intenta predecir con sus pesos actuales
-        z = np.dot(X, W) + b
-        y_predicha = 1 / (1 + np.exp(-z))  # Función Sigmoide
-
-        # PASO B: Calculamos cuánto se ha equivocado (Coste)
         coste = calcular_coste(y, y_predicha)
         historial_coste.append(coste)
 
-        # PASO C: Calculamos los gradientes (la dirección para corregir)
-        dW, db = calcular_gradientes(X, y, y_predicha)
+        dW, db = calcular_gradientes(X_estandarizado, y, y_predicha)
 
-        # PASO D: actualizamos los pesos
-        # Restamos el gradiente multiplicado por el learning_rate
         W = W - learning_rate * dW
         b = b - learning_rate * db
 
-        # Imprimimos el coste cada 100 iteraciones para monitorizar
         if i % 400 == 0:
             print(f"Iteración {i}: Coste = {coste:.4f}")
 
-    return W, b, historial_coste
+    # Ahora devolvemos también las medias y desviaciones aprendidas
+    return W, b, historial_coste, medias, desviaciones
 
 if __name__ == '__main__':
     X = np.array([
-        [-1.09388026, 1., 0., 0., 0., 0., 1., 1., 0., 0., 0., 0., 1., 0.],
-        [0.47743945, 0., 0., 0., 1., 1., 0., 0., 0., 0., 1., 0., 0., 1.],
-        [1.56527617, 1., 1., 0., 0., 1., 1., 1., 1., 1., 0., 1., 1., 0.],
-        [-0.12691428, 1., 1., 0., 1., 1., 0., 1., 1., 0., 0., 1., 0., 0.],
-        [-0.61039727, 1., 1., 0., 0., 1., 0., 1., 1., 0., 1., 1., 0., 0.],
-        [-0.97300951, 1., 1., 1., 0., 1., 1., 0., 0., 0., 0., 1., 1., 1.],
-        [1.56527617, 1., 1., 1., 1., 1., 1., 0., 1., 1., 1., 0., 0., 1.],
-        [0.5983102, 1., 0., 0., 0., 1., 0., 0., 0., 0., 1., 1., 0., 1.],
-        [-1.09388026, 1., 1., 1., 1., 1., 1., 0., 0., 0., 1., 0., 0., 0.],
-        [1.20266393, 1., 1., 1., 1., 0., 1., 1., 1., 1., 0., 0., 0., 0.],
-        [0.3565687, 0., 0., 1., 1., 1., 1., 0., 1., 0., 0., 1., 1., 1.],
-        [0.84005169, 0., 1., 1., 1., 0., 0., 0., 0., 0., 0., 1., 0., 1.],
-        [-0.61039727, 1., 0., 0., 1., 1., 0., 0., 0., 0., 0., 1., 1., 1.],
-        [-0.61039727, 1., 1., 1., 1., 1., 0., 0., 1., 0., 0., 1., 0., 1.],
-        [0.96092244, 1., 0., 0., 1., 0., 0., 0., 1., 0., 0., 1., 0., 0.],
-        [0.5983102, 0., 1., 1., 1., 1., 0., 1., 1., 1., 0., 1., 0., 1.],
-        [-1.4564925, 1., 1., 1., 1., 0., 0., 0., 0., 1., 1., 1., 0., 0.],
-        [-0.97300951, 0., 0., 1., 1., 1., 0., 1., 0., 1., 0., 1., 1., 1.],
-        [0.96092244, 0., 0., 0., 1., 1., 0., 0., 0., 0., 1., 0., 1., 0.],
-        [-1.57736324, 0., 0., 1., 0., 0., 0., 1., 0., 0., 0., 1., 0., 1.]])
+        [55., 1., 0., 0., 0., 0., 1., 1., 0., 0., 0., 0., 1., 0.],
+        [72., 0., 0., 0., 1., 1., 0., 0., 0., 0., 1., 0., 0., 1.],
+        [81., 1., 1., 0., 0., 1., 1., 1., 1., 1., 0., 1., 1., 0.],
+        [64., 1., 1., 0., 1., 1., 0., 1., 1., 0., 0., 1., 0., 0.],
+        [59., 1., 1., 0., 0., 1., 0., 1., 1., 0., 1., 1., 0., 0.],
+        [52., 1., 1., 1., 0., 1., 1., 0., 0., 0., 0., 1., 1., 1.],
+        [83., 1., 1., 1., 1., 1., 1., 0., 1., 1., 1., 0., 0., 1.],
+        [74., 1., 0., 0., 0., 1., 0., 0., 0., 0., 1., 1., 0., 1.],
+        [51., 1., 1., 1., 1., 1., 1., 0., 0., 0., 1., 0., 0., 0.],
+        [78., 1., 1., 1., 1., 0., 1., 1., 1., 1., 0., 0., 0., 0.],
+        [70., 0., 0., 1., 1., 1., 1., 0., 1., 0., 0., 1., 1., 1.],
+        [76., 0., 1., 1., 1., 0., 0., 0., 0., 0., 0., 1., 0., 1.],
+        [60., 1., 0., 0., 1., 1., 0., 0., 0., 0., 0., 1., 1., 1.],
+        [61., 1., 1., 1., 1., 1., 0., 0., 1., 0., 0., 1., 0., 1.],
+        [77., 1., 0., 0., 1., 0., 0., 0., 1., 0., 0., 1., 0., 0.],
+        [73., 0., 1., 1., 1., 1., 0., 1., 1., 1., 0., 1., 0., 1.],
+        [48., 1., 1., 1., 1., 0., 0., 0., 0., 1., 1., 1., 0., 0.],
+        [54., 0., 0., 1., 1., 1., 0., 1., 0., 1., 0., 1., 1., 1.],
+        [75., 0., 0., 0., 1., 1., 0., 0., 0., 0., 1., 0., 1., 0.],
+        [45., 0., 0., 1., 0., 0., 0., 1., 0., 0., 0., 1., 0., 1.]])
 
     y = np.array([1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1])
 
-    W, b, historial_coste = entrenar_regresion_logistica(X, y, learning_rate=0.01, num_iteraciones=1000)
+    W, b, historial_coste, medias, std = entrenar_regresion_logistica(X, y, learning_rate=0.01, num_iteraciones=1000)
 
-    # 1. HACER PREDICCIONES CON LOS PESOS APRENDIDOS
-    # (Asumiendo que tus variables del modelo se llaman W y b, y tus datos X e y)
-    z_final = np.dot(X, W) + b
-    probabilidades_finales = 1 / (1 + np.exp(-z_final)) # Sigmoide
+    # Recogemos las medias y desviaciones también
+    W, b, historial_coste, medias, desviaciones = entrenar_regresion_logistica(X, y, learning_rate=0.01,
+                                                                               num_iteraciones=1000)
 
-    # Si la probabilidad es mayor a 0.5, decimos que es EVAR (1), si no, Cirugía (0)
+    # Pasamos las medias y desviaciones para que prediga correctamente
+    probabilidades_finales = predecir_probabilidades(X, W, b, medias, desviaciones)
+
     predicciones_firmes = (probabilidades_finales >= 0.5).astype(int)
 
-    # 2. CALCULAR EL PORCENTAJE DE ACIERTO (ACCURACY)
     aciertos = np.sum(predicciones_firmes == y)
     total_pacientes = len(y)
     precision_global = (aciertos / total_pacientes) * 100
@@ -142,12 +161,8 @@ if __name__ == '__main__':
     print(f"El modelo ha acertado el diagnóstico de {aciertos} de {total_pacientes} pacientes.")
     print(f"Precisión Global (Accuracy): {precision_global:.2f}%")
 
-    # 3. EXTRAER LOS ODDS RATIOS (INTERPRETABILIDAD CLÍNICA)
-    # Convertimos los pesos (Log-Odds) a Odds Ratios con la exponencial
     odds_ratios = np.exp(W)
-
-    # Nombres de tus columnas originales (excepto TTO y FORMA INTERV)
-    nombres_variables = ['Edad_Estandarizada', 'Sexo', 'Fumador', 'Dislipemia', 'Diabetes',
+    nombres_variables = ['Edad_Auto_Estandarizada', 'Sexo', 'Fumador', 'Dislipemia', 'Diabetes',
                          'HTA', 'IAM', 'ERC', 'EPOC', 'ACV', 'FA', 'CANCER', 'ICC', 'EAP']
 
     print("\n--- PESOS DE LAS VARIABLES (ODDS RATIO PARA EVAR) ---")

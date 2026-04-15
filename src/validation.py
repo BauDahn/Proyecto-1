@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from Tree.tree import DecisionTree
+#from Tree.tree import DecisionTree
 from Tree.explainability import tree_visualizer
 from Regression import Regression
 import random
@@ -61,14 +61,13 @@ def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=1
             modelo.fit(X_tr, y_tr)
             predicciones = modelo.predict(X_te)
             exactitud = np.mean(predicciones == y_te)
-        
+
         elif tipo_modelo == "logistic":
-            # Lógica para la regresión logística.
-            pesos, sesgos, _ = Regression.entrenar_regresion_logistica(X_tr, y_tr)
-        
-            # Evaluamos con el set de pacientes que no fue recogido en la muestra bootstrap
-            # Primero sacamos las probabilidades (0.0 a 1.0)
-            probabilidades = Regression.predecir_probabilidades(X_te, pesos, sesgos)
+            # Recogemos W, b, ignoramos coste (_), y recogemos medias y stds
+            pesos, sesgos, _, medias, stds = Regression.entrenar_regresion_logistica(X_tr, y_tr, learning_rate=0.01, num_iteraciones=3000)
+
+            # Le pasamos las medias y stds del entrenamiento a los pacientes de test
+            probabilidades = Regression.predecir_probabilidades(X_te, pesos, sesgos, medias, stds)
 
             # Las convertimos a decisiones firmes (0 o 1) con el umbral de 0.5
             predicciones_firmes = (probabilidades >= 0.5).astype(int)
@@ -98,7 +97,7 @@ if __name__ == '__main__':
     X = X_df.to_numpy(dtype=float)
     y = y_series.to_numpy().astype(int)
 
-
+    '''
     # Testeo del árbol
     print("Evaluación del primer árbol")
     media_tree, std_tree = evaluar_con_bootstrap(X, y, tipo_modelo="tree", max_depth=5, min_samples=10, cantidad_minima_en_nodo=4)
@@ -107,7 +106,7 @@ if __name__ == '__main__':
     print("-----------------------")
     print("\nResultados:\n")
     print(f"Modelo: Árbol con todos los pacientes.\nPrecisión: {media_tree*100:.2f}% (+/- {std_tree*100:.2f}%)")
-
+    '''
     '''
     print("\nVisualización del árbol generado...")
 
