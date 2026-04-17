@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-#from Tree.tree import DecisionTree
+from Tree.tree import DecisionTree
 from Tree.explainability import tree_visualizer
 from Regression import Regression
 import random
@@ -45,7 +45,7 @@ def generar_muestra_bootstrap(X, y):
     return X_train, y_train, X_test, y_test
 
 
-def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=10, min_samples=5, cantidad_minima_en_nodo=1):
+def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=10, min_samples=5, cantidad_minima_en_nodo=1, lr=0.01, umbral=0.5, iters=1000):
     metricas = []
     
     for i in range(iteraciones):
@@ -64,13 +64,13 @@ def evaluar_con_bootstrap(X, y, tipo_modelo="tree", iteraciones=200, max_depth=1
 
         elif tipo_modelo == "logistic":
             # Recogemos W, b, ignoramos coste (_), y recogemos medias y stds
-            pesos, sesgos, _, medias, stds = Regression.entrenar_regresion_logistica(X_tr, y_tr, learning_rate=0.01, num_iteraciones=1000)
+            pesos, sesgos, _, medias, stds = Regression.entrenar_regresion_logistica(X_tr, y_tr, learning_rate=lr, num_iteraciones=iters)
 
             # Le pasamos las medias y stds del entrenamiento a los pacientes de test
             probabilidades = Regression.predecir_probabilidades(X_te, pesos, sesgos, medias, stds)
 
             # Las convertimos a decisiones firmes (0 o 1) con el umbral de 0.5
-            predicciones_firmes = (probabilidades >= 0.5).astype(int)
+            predicciones_firmes = (probabilidades >= umbral).astype(int)
 
             # Calculamos la exactitud (Accuracy) comparando con la realidad (y_te)
             exactitud = np.mean(predicciones_firmes == y_te)
@@ -132,7 +132,7 @@ if __name__ == '__main__':
 
     # Testeo de la Regresión Logística
     print("\nEvaluación de la primera Regresión Logística")
-    media_log, std_log = evaluar_con_bootstrap(X, y, tipo_modelo="logistic")
+    media_log, std_log = evaluar_con_bootstrap(X, y, lr=0.1, umbral=0.5, iters=2000, tipo_modelo="logistic")
     print("Primera Regresión Logística evaluada...")
     print("-----------------------")
 
@@ -140,3 +140,4 @@ if __name__ == '__main__':
     print(
         f"Modelo: Regresión Logística con todos los pacientes.\nPrecisión: {media_log * 100:.2f}% (+/- {std_log * 100:.2f}%)")
     print("\n----------------\n")
+    
