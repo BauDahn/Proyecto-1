@@ -20,7 +20,7 @@ def validate_model(model_path, X_test, y_test):
     disp.plot()
     plt.title("Matriz de Confusión")
     plt.show()
-
+    
     return accuracy_score(y_test, y_pred)
 
 if __name__ == '__main__':
@@ -28,5 +28,5 @@ if __name__ == '__main__':
     y = df["TTO"]
     X = df.loc[:, df.columns != 'TTO']
 
-    
+
     validate_model('src/modelo_arbol.pkl', )
