@@ -1,6 +1,6 @@
 # Análisis exploratorio de los datos para buscar una precisión mayor en el modelo
 library(readr)
-dataset_clean <- read_delim("universidad/Proyecto-1/data/processed/dataset_clean.csv", 
+dataset_clean <- read_delim("universidad/Proyecto-1/data/processed/pre_r_df.csv", 
                             delim = ";", escape_double = FALSE, trim_ws = TRUE)
 View(dataset_clean)
 
@@ -19,24 +19,23 @@ residuos_pearson <- residuals(modelo_simple, type="pearson")
 plot(modelo_simple, which=1)
 plot(modelo_simple, which=5)
 
-# Limpieza de columnas
-# install.packages("effectsize")
-library(effectsize)
-cohens_f_squared(modelo_simple)
+# Limpieza de variables
+library(glmnet)      # Ajuste de modelos lineales generalizados con penalización (Lasso, Ridge y Elastic Net)
+library(mlbench)     # Conjuntos de datos (benchmarks)
+library(corrplot)    # Visualización gráfica de matrices de correlación
 
+X <- as.matrix(dataset_clean[,1:15])
+y = dataset_clean$TTO
 
-modelo_nuevo = glm(TTO ~ Edad + Fumador + FA, data=dataset_clean, family="binomial")
-report(modelo_nuevo)
-cohens_f_squared(modelo_nuevo)
+# Volveré a crear el modelo con glmnet
+modelo_simple <- cv.glmnet(X, y, family="binomial")
+modelo_simple$lambda.1se
 
+modelo_ajustado <- glmnet(X, y, family="binomial")
+report(modelo_ajustado, s=modelo_simple$lambda.1se, file="modelo_ajustado", type = "csv")
 
-nuevo_df = dataset_clean[, c("TTO", "Edad", "Fumador", "FA", "CANCER", "ICC", "EPOC")]
-modelo_full <- glm(TTO ~ (Edad + Fumador + FA + CANCER + ICC + EPOC)^2, data = nuevo_df, family = "binomial")
-modelo_optimo <- step(modelo_full, direction = "both")
+predicciones <- predict(modelo_ajustado, newx = X, s=modelo_simple$lambda.1se)
+AUC(predicciones, y)
 
-modelo_optimo = glm(TTO ~ Edad + Fumador + FA + CANCER + ICC + EPOC + CANCER:ICC + CANCER:EPOC, data = nuevo_df)
+write.csv2(modelo_ajustado, "universidad/Proyecto-1/data/processed/dataset_clean.csv", row.names = FALSE)
 
-
-
-
-write.csv2(nuevo_df, "universidad/Proyecto-1/data/processed/dataset_clean.csv", row.names = FALSE)
