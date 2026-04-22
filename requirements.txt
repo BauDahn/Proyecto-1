@@ -1,4 +1,6 @@
 pandas
 numpy
 openpyxl
+scikit-learn
+matplotlib.pyplot
 #Quitamos el os porque ya viene instalado con python
