@@ -124,7 +124,21 @@ ggplot(dataset_clean, aes(x = comorbilidades, fill = as.factor(TTO))) +
   labs(y = "Proporción", title = "Reparto de TTO por Cantidad de Comorbilidades") +
   theme_minimal()
 
-columnas_deseadas <- c("Edad", "Sexo", "Fumador", "comorbilidades", "TTO")
+# Voy a agrupar las comorbilidades en grupos
+library(forcats)
+
+dataset_clean$comorb_grupos <- fct_collapse(as.factor(dataset_clean$comorbilidades),
+                                            "Bajo"  = c("0", "1", "2"),
+                                            "Medio" = c("3", "4", "5"),
+                                            "Alto"  = c("6", "7", "8")
+)
+ggplot(dataset_clean, aes(x = comorb_grupos, fill = as.factor(TTO))) +
+  geom_bar(position = "fill") +
+  labs(y = "Proporción", title = "Reparto de TTO por Cantidad de Comorbilidades") +
+  theme_minimal()
+
+
+columnas_deseadas <- c("Edad", "Sexo", "Fumador", "comorb_grupos", "TTO")
 nuevo_dataset <- dataset_clean[, columnas_deseadas]
 
 str(nuevo_dataset)
@@ -135,13 +149,19 @@ library(repmod)
 library(performance) 
 
 
-modelo_simple = glm(TTO ~ Edad + Sexo + Fumador + comorbilidades, data=dataset_clean, family="binomial")
+modelo_simple = glm(TTO ~ Edad + Sexo + Fumador + comorb_grupos, data=dataset_clean, family="binomial")
 report(modelo_simple)
 
-X <- as.matrix(dataset_clean[,columnas_deseadas])
-y = dataset_clean$TTO
-predicciones <- predict(modelo_simple, newx = X)
-AUC(predicciones, y)
+# Validación del modelo
+dataset_clean <- as.data.frame(dataset_clean)
 
-boot_model()
-cv_model()
+modelo_agrupado <- glm(TTO ~ Edad + Sexo + Fumador + comorb_grupos, 
+                       data = dataset_clean, 
+                       family = "binomial")
+
+AUCs <- cv_model(TTO ~ Edad + Sexo + Fumador + comorb_grupos, 
+                 data = dataset_clean, 
+                 fit_function = "glm", 
+                 family = binomial())
+
+mean(AUCs)
