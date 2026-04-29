@@ -5,8 +5,9 @@ import joblib # Guarda el modelo
 def train():
     # 1. Cargar y limpiar datos usando tu lógica existente
     df = pd.read_csv('../data/processed/dataset_clean.csv', sep=';')
-    y = df["TTO"]
-    X = df.loc[:, df.columns != 'TTO']
+    df_final = pd.get_dummies(df, columns=['comorbilidades'], drop_first=True)
+    y = df_final["TTO"]
+    X = df_final.loc[:, df_final.columns != 'TTO']
 
     # 2. Implementar Scikit-Learn
     model = DecisionTreeClassifier(max_depth=5, random_state=42)

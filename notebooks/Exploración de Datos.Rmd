@@ -1,0 +1,168 @@
+---
+title: "Exploración de Datos"
+output: html_document
+date: "2026-04-24"
+---
+
+```{r}
+library(readr)
+library(here)
+dataset_clean <- read_delim(here("data", "processed", "pre_r_df.csv"), 
+                            delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+```
+
+Vamos a ver que los tipos de datos estén bien
+
+```{r}
+str(dataset_clean)
+```
+
+Hay que arreglar la variable Hospital, Fumador y TTO
+
+```{r}
+dataset_clean$TTO <- as.logical(dataset_clean$TTO)
+dataset_clean$Hospital <- as.factor(dataset_clean$Hospital)
+dataset_clean$Fumador <- as.factor(dataset_clean$Fumador)
+```
+
+Ahora vamos a ver cómo se distribuyen las variables
+
+```{r}
+summary(dataset_clean)
+```
+
+
+Estudio de las variables respecto del tipo de tratamiento (TTO)
+
+
+```{r}
+library(ggplot2)
+```
+
+Comprobación de variables dicotómicas
+
+Sexo
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = Sexo)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+Dislipemia
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = Dislipemia)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+
+Diabetes
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = Diabetes)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+HTA
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = HTA)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+IAM
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = IAM)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+ERC
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = ERC)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+EPOC
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = EPOC)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+ACV
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = ACV)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+FA
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = FA)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+CANCER
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = CANCER)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+ICC
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = CANCER)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+EAP
+```{r}
+ggplot(dataset_clean, aes(x = TTO, fill = EAP)) + 
+  geom_bar(position= "fill") +
+  labs(y = "Proporción", x = "TTO", fill= "bool") +
+  theme_minimal()
+```
+
+
+# Comprobarción de variables categóricas
+
+Hospital
+```{r}
+dataset_clean$Hospital[dataset_clean$Hospital == 0] <- 1 # Hay un hospital con un 0 que tiene que ser un 1 en el dataset (fila 179)
+
+ggplot(dataset_clean, aes(x = Hospital, fill = as.factor(TTO))) +
+  geom_bar(position = "fill") +
+  labs(y = "Proporción", title = "Reparto de TTO por Hospital") +
+  theme_minimal()
+```
+
+
+# Comprobación de variable numérica
+
+Edad
+```{r}
+ggplot(dataset_clean, aes(x = TTO, y = Edad, fill = TTO)) +
+  geom_boxplot() +
+  labs(title = "Distribución de Edad por Tipo de TTO",
+       x = "Tratamiento (TTO)",
+       y = "Edad (Años)") +
+  theme_minimal()
+```
+
+
