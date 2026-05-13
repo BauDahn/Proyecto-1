@@ -5,7 +5,7 @@ import joblib # Guarda el modelo
 def train():
     # 1. Cargar y limpiar datos usando tu lógica existente
     df = pd.read_csv('../data/processed/dataset_clean.csv', sep=';')
-    df_final = pd.get_dummies(df, columns=['comorbilidades'], drop_first=True)
+    df_final = pd.get_dummies(df, columns=['comorb_grupos'], drop_first=True)
     y = df_final["TTO"]
     X = df_final.loc[:, df_final.columns != 'TTO']
 
