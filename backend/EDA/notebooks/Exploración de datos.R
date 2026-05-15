@@ -1,6 +1,7 @@
 # Exploración de los datos
 library(readr)
-dataset_clean <- read_delim("universidad/Proyecto-1/data/processed/pre_r_df.csv", 
+
+dataset_clean <- read_delim("backend/EDA/data/processed/pre_r_df.csv", 
                             delim = ";", escape_double = FALSE, trim_ws = TRUE)
 View(dataset_clean)
 
@@ -143,7 +144,7 @@ nuevo_dataset <- dataset_clean[, columnas_deseadas]
 
 str(nuevo_dataset)
 
-write.csv2(nuevo_dataset, "universidad/Proyecto-1/data/processed/dataset_clean.csv", row.names = FALSE)
+write.csv2(nuevo_dataset, "backend/EDA/data/processed/dataset_clean.csv", row.names = FALSE)
 
 library(repmod)
 library(performance) 
@@ -165,3 +166,14 @@ AUCs <- cv_model(TTO ~ Edad + Sexo + Fumador + comorb_grupos,
                  family = binomial())
 
 mean(AUCs)
+
+
+#Pesos del modelo
+pesos <- coef(modelo_agrupado)
+
+tabla_pesos <- data.frame(
+  Variable = names(pesos),
+  Peso = as.numeric(pesos)
+)
+
+write.csv(tabla_pesos, "backend/src/models/model_weights.csv", row.names = FALSE)

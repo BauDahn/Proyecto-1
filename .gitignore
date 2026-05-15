@@ -23,3 +23,5 @@ Thumbs.db
 .Rhistory
 .venv/
 .claude/settings.local.json
+.Rproj.user
+Proyecto-1.Rproj
