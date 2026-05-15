@@ -22,3 +22,4 @@ Thumbs.db
 .idea/
 .Rhistory
 .venv/
+.claude/settings.local.json
