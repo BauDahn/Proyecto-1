@@ -1,122 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
+import Formulario from './components/Formulario';
+import { obtenerPrediccion } from './services/api';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [resultado, setResultado] = useState(null);
+  const [cargando, setCargando] = useState(false);
+
+  const manejarEnvio = async (datos) => {
+    setCargando(true);
+    setResultado(null); // Limpiamos resultado anterior
+    try {
+      const data = await obtenerPrediccion(datos);
+      setResultado(data); // Guardamos la respuesta del backend
+    } catch (error) {
+      alert("Error al conectar con el backend");
+    } finally {
+      setCargando(false);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-slate-900 py-12 px-4">
+      <Formulario onSubmit={manejarEnvio} />
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {/* AQUÍ SE MUESTRA EL RESULTADO DE PREDICT */}
+      {resultado && (
+        <div className="max-w-4xl mx-auto mt-8 p-6 bg-white rounded-2xl shadow-2xl border-l-8 border-indigo-600 animate-bounce-short">
+          <h3 className="text-xl font-black text-slate-800 mb-2">📊 Resultado del Análisis:</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-indigo-50 rounded-lg">
+              <p className="text-sm text-indigo-600 font-bold uppercase">Nivel de Riesgo</p>
+              <p className="text-3xl font-black text-slate-900">{resultado.riesgo}</p>
+            </div>
+            <div className="p-4 bg-slate-50 rounded-lg">
+              <p className="text-sm text-slate-500 font-bold uppercase">Probabilidad</p>
+              <p className="text-3xl font-black text-slate-900">{(resultado.probabilidad * 100).toFixed(1)}%</p>
+            </div>
+          </div>
+          {resultado.nota && (
+            <p className="mt-4 text-slate-600 italic border-t pt-4">
+              📌 {resultado.nota}
+            </p>
+          )}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {cargando && (
+        <div className="text-center mt-4 text-white font-bold animate-pulse">
+          Procesando datos médicos...
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;

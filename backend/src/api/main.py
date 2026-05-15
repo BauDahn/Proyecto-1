@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.src.app.main import predict
+from src.app.main import predict
 from pydantic import BaseModel
 
 app = FastAPI()

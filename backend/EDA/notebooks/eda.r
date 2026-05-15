@@ -1,6 +1,6 @@
 # Análisis exploratorio de los datos para buscar una precisión mayor en el modelo
 library(readr)
-dataset_clean <- read_delim("universidad/Proyecto-1/data/processed/pre_r_df.csv", 
+dataset_clean <- read_delim("../data/processed/pre_r_df.csv", 
                             delim = ";", escape_double = FALSE, trim_ws = TRUE)
 View(dataset_clean)
 
