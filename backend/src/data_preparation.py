@@ -2,7 +2,7 @@ import pandas as pd
 
 # 1. CARGA DEL DATASET INICIAL
 # Saltamos la primera fila de códigos para que no ensucie los nombres de columnas 
-df_raw = pd.read_excel('../data/raw/dataset_inicial.xlsx', skiprows=[1])
+df_raw = pd.read_excel('../EDA/data/raw/dataset_inicial.xlsx', skiprows=[1])
 
 # Esta línea elimina espacios invisibles al principio y al final de TODOS los nombres de columnas
 df_raw.columns = df_raw.columns.str.strip()
