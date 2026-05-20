@@ -1,0 +1,11 @@
+{
+  "intercepto": -6.4583,
+  "betas": {
+    "Edad": 0.0845,
+    "SexoTRUE": -0.7148,
+    "Fumador1": 0.3508,
+    "Fumador2": 1.6747,
+    "comorb_gruposMedio": 0.4066,
+    "comorb_gruposAlto": 1.3136
+  }
+}
