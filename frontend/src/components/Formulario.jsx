@@ -4,7 +4,7 @@ const FormularioMedico = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
     edad: 25, 
     sexo: false, 
-    fumador: 0, 
+    fumador: 'No fuma',
     dislipemia: false,
     diabetes: false, 
     hta: false, 
@@ -28,7 +28,7 @@ const FormularioMedico = ({ onSubmit }) => {
       // Permite borrar el número sin que explote
       finalValue = value === '' ? '' : parseInt(value);
     } else if (name === 'fumador') {
-      finalValue = parseInt(value);
+      finalValue = value;
     } else {
       finalValue = value;
     }
@@ -77,9 +77,9 @@ const FormularioMedico = ({ onSubmit }) => {
                 onChange={handleChange}
                 className="block w-full rounded-lg border-slate-300 text-slate-900 font-bold shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border bg-white"
               >
-                <option value={0}>🚫 No fuma</option>
-                <option value={1}>🚬 Fumador activo</option>
-                <option value={2}>⏱️ Ex-fumador</option>
+                <option value="No fuma">🚫 No fuma</option>
+                <option value="Fumador activo">🚬 Fumador activo</option>
+                <option value="Ex-fumador">⏱️ Ex-fumador</option>
               </select>
             </div>
 
