@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.app.main import predict
 from pydantic import BaseModel
+from typing import Literal
 
 app = FastAPI()
 
@@ -15,7 +16,7 @@ app.add_middleware(
 class Muestra(BaseModel):
     edad : int
     sexo : bool
-    fumador: int
+    fumador: Literal['No fuma', 'Fumador activo', 'Ex-fumador']
     dislipemia: bool
     diabetes : bool
     hta:  bool
