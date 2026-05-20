@@ -1,6 +1,6 @@
 # Exploración de los datos
 library(readr)
-dataset_clean <- read_delim("universidad/Proyecto-1/data/processed/pre_r_df.csv", 
+dataset_clean <- read_delim("../data/processed/pre_r_df.csv", 
                             delim = ";", escape_double = FALSE, trim_ws = TRUE)
 View(dataset_clean)
 
@@ -165,3 +165,11 @@ AUCs <- cv_model(TTO ~ Edad + Sexo + Fumador + comorb_grupos,
                  family = binomial())
 
 mean(AUCs)
+
+
+# Encontrar el mejor umbral
+probabilidades <- predict(modelo_agrupado, newdata = test_data, type = "response")
+
+objeto_roc <- roc(test_data$riesgo, probabilidades)
+mejor_umbral <- coords(objeto_roc, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
+print(mejor_umbral)
