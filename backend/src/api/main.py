@@ -6,9 +6,15 @@ from typing import Literal
 
 app = FastAPI()
 
+origins = [
+    "https://dkg5bcnx-5173.uks1.devtunnels.ms", 
+    "http://localhost:5173", # Para trabajar de forma local
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

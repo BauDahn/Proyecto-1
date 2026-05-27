@@ -88,14 +88,10 @@ function App() {
                   📊 Reporte Predictivo de Riesgo Hospitalario
                 </h3>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 bg-emerald-950/40 border border-emerald-900/60 rounded-xl text-center">
-                    <span className="text-xs text-emerald-400 font-extrabold tracking-widest block mb-1">NIVEL DE RIESGO</span>
-                    <strong className="text-3xl font-black text-emerald-300">{resultado.prediccion || resultado.riesgo}</strong>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
                   
                   <div className="p-4 bg-slate-900 border border-slate-700/60 rounded-xl text-center">
-                    <span className="text-xs text-slate-400 font-extrabold tracking-widest block mb-1">PROBABILIDAD</span>
+                    <span className="text-xs text-slate-400 font-extrabold tracking-widest block mb-1">PROBABILIDAD DE INTERVENCIÓN</span>
                     <strong className="text-3xl font-black text-white">
                       {(resultado.probabilidad * 100).toFixed(2)}%
                     </strong>
