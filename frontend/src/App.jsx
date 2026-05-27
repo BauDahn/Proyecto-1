@@ -145,21 +145,21 @@ function App() {
                   <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl shadow-md">
                     <div className="text-xs font-bold text-indigo-400 tracking-wider uppercase mb-1">AUC-ROC</div>
                     <div className="text-3xl font-black text-white">0.712</div>
-                    <div className="text-xs text-slate-500 mt-2">Excelente capacidad de discriminación diagnóstica</div>
+                    <div className="text-xs text-slate-500 mt-2">Buena capacidad de discriminación</div>
                   </div>
                   <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl shadow-md">
                     <div className="text-xs font-bold text-teal-400 tracking-wider uppercase mb-1">Sensibilidad</div>
-                    <div className="text-3xl font-black text-white">84.2%</div>
+                    <div className="text-3xl font-black text-white">70%</div>
                     <div className="text-xs text-slate-500 mt-2">Detección de pacientes con riesgo real</div>
                   </div>
                   <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl shadow-md">
-                    <div className="text-xs font-bold text-amber-400 tracking-wider uppercase mb-1">Especificidad</div>
-                    <div className="text-3xl font-black text-white">89.1%</div>
+                    <div className="text-xs font-bold text-amber-400 tracking-wider uppercase mb-1">F1-Score</div>
+                    <div className="text-3xl font-black text-white">0.67</div>
                     <div className="text-xs text-slate-500 mt-2">Filtrado correcto de pacientes sanos</div>
                   </div>
                   <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl shadow-md">
                     <div className="text-xs font-bold text-rose-400 tracking-wider uppercase mb-1">Precisión General</div>
-                    <div className="text-3xl font-black text-white">86.5%</div>
+                    <div className="text-3xl font-black text-white">71%</div>
                     <div className="text-xs text-slate-500 mt-2">Efectividad general del modelo logístico</div>
                   </div>
                 </div>
@@ -190,23 +190,23 @@ function App() {
                 {/* Cuadrícula de Métricas del Árbol */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl shadow-md">
-                    <div className="text-xs font-bold text-indigo-400 tracking-wider uppercase mb-1">Exactitud (Accuracy)</div>
-                    <div className="text-3xl font-black text-white">83.1%</div>
-                    <div className="text-xs text-slate-500 mt-2">Efectividad global de las reglas de clasificación</div>
+                    <div className="text-xs font-bold text-indigo-400 tracking-wider uppercase mb-1">Accuracy</div>
+                    <div className="text-3xl font-black text-white">62.2%</div>
+                    <div className="text-xs text-slate-500 mt-2">Accuracy obtenido usando un umbral de 0.5</div>
                   </div>
                   <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl shadow-md">
                     <div className="text-xs font-bold text-teal-400 tracking-wider uppercase mb-1">Sensibilidad</div>
-                    <div className="text-3xl font-black text-white">81.0%</div>
+                    <div className="text-3xl font-black text-white">62%</div>
                     <div className="text-xs text-slate-500 mt-2">Capacidad de captación de positivos verdaderos</div>
                   </div>
                   <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl shadow-md">
                     <div className="text-xs font-bold text-amber-400 tracking-wider uppercase mb-1">Profundidad del Árbol</div>
-                    <div className="text-3xl font-black text-white">5 Niveles</div>
+                    <div className="text-3xl font-black text-white">4 Niveles</div>
                     <div className="text-xs text-slate-500 mt-2">Complejidad controlada mediante poda (Pruning)</div>
                   </div>
                   <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl shadow-md">
                     <div className="text-xs font-bold text-rose-400 tracking-wider uppercase mb-1">Nodos Terminales</div>
-                    <div className="text-3xl font-black text-white">12 Hojas</div>
+                    <div className="text-3xl font-black text-white">8 Hojas</div>
                     <div className="text-xs text-slate-500 mt-2">Segmentos clínicos finales bien definidos</div>
                   </div>
                 </div>
@@ -217,10 +217,12 @@ function App() {
                   <p className="text-slate-400 text-sm mb-4 leading-relaxed">
                     A diferencia de la regresión, este modelo opera dividiendo al dataset secuencialmente. La primera división o **Nodo Raíz** evalúa la variable con mayor ganancia de información, facilitando la toma de decisiones médicas mediante un mapa de flujo visual.
                   </p>
-                  <div className="bg-slate-900 p-4 rounded-xl border border-slate-700 font-mono text-xs text-teal-300">
-                    Raíz: [¿Edad &gt; 65?] <br />
-                    ├── Sí: [¿Diabetes == True?] ──&gt; Alto Riesgo (88%) <br />
-                    └── No: [¿Fumador == True?] ──&gt; Bajo Riesgo (12%)
+                  <div className="bg-slate-900 p-4 rounded-xl border border-slate-700 overflow-auto">
+    <img
+      src="/plots/diagrama_arbol.png"
+      alt="Diagrama del árbol de decisión"
+      className="w-full object-contain"
+    />
                   </div>
                 </div>
               </div>

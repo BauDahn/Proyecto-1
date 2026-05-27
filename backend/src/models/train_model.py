@@ -2,13 +2,14 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 import joblib
+from tuning import optimize_hyperparameters
 # 1. AGREGAMOS ESTAS IMPORTACIONES PARA PODER DIBUJAR
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
 import os
 
 # Carga de datos procesados
-data_path = "backend/EDA/data/processed/dataset_clean.csv"
+data_path = "EDA/data/processed/dataset_clean.csv"
 df = pd.read_csv(data_path, delimiter=";")
 
 df['comorb_grupos'] = df['comorb_grupos'].map({"Bajo": 0, "Medio": 1, "Alto": 2})
@@ -20,10 +21,9 @@ y = df["TTO"]
 # División en entrenamiento y prueba
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Inicialización y entrenamiento del modelo
-# (Le ponemos max_depth=4 para que el gráfico no sea gigante y sea legible en la web)
-decision_tree = DecisionTreeClassifier(max_depth=4, random_state=42)
-decision_tree.fit(X_train, y_train)
+print("Buscando los mejores hiperparámetros (esto puede tardar unos segundos)...")
+decision_tree = optimize_hyperparameters(X_train, y_train)
+print(f"Mejores parámetros encontrados: {decision_tree.get_params()}")
 
 # Guardar el modelo entrenado
 os.makedirs("backend/src/models", exist_ok=True)
