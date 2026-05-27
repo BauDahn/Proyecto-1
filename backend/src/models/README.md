@@ -1,17 +1,16 @@
-# Pipeline de Datos y Validación
+# Modelado Analítico y Machine Learning (R & Scikit-Learn)
 
-Este conjunto de scripts constituye el entorno de experimentación principal. Coordina la limpieza de datos, el entrenamiento de los modelos y la evaluación estadística mediante técnicas de remuestreo.
+Para la inveestigación de datos decidimos usar dos softwares distintos. El árbol fue hecho usando SciKit-Learn, mientras que el modelo de regresión logística fue hecho en R, dado que en la asignatura proyectos de regresión hemos aprendido a hacerlo en este software. La idea era tener dos modelos para comparar y ver cuál era mejor.
 
-## 📂 Archivos Principales
+## 1. Regresión Logística (R a Python)
+Para garantizar la solidez estadística y la interpretabilidad, se entrenaron modelos de regresión utilizando **R**.
+* **Estudio de Datos**: Todo el estudio de dats necesario para hacer la regresión logística en R se hizo en (`EDA/notebooks`), donde comparamos varios modelos, vimos relaciones entre variables o interacciones. Luego nos quedamos con el mejor modelo.
+* **Exportación de Pesos**: Los coeficientes obtenidos en R (Betas, Intercepto) se han exportado en un json (`coeficientes.json`).
+* **Inferencia**: El backend en Python (`app/main.py`) carga este JSON y calcula la probabilidad de riesgo mediante la función sigmoide estandarizada matemática: `1 / (1 + math.exp(-z))`. 
 
-* **`data_preparation.py`**: Script fundacional de *Data Engineering*. Carga los datos crudos, estandariza los nombres de las columnas y mapea las variables clínicas de interés. Aplica reglas de descarte clínico y limpieza de valores nulos para garantizar que los modelos reciban matrices densas y limpias.
-* **`test.engine.py`**: Entorno de "Sanity Check". Compara directamente nuestra implementación nativa (`Tree.tree.DecisionTree`) contra el estándar de la industria (`sklearn.tree.DecisionTreeClassifier`) utilizando el dataset *Breast Cancer*. Sirve para validar la integridad matemática del motor de C++ aislando el problema de los datos.
-* **`validation.py`**: Núcleo de evaluación comparativa. Instancia los distintos modelos (Árboles de Decisión y Regresión Logística) y evalúa su capacidad predictiva utilizando un sistema de *Bootstrap*.
-
-## 🧪 Metodología de Validación (`validation.py`)
-
-Debido a la naturaleza de los datasets médicos, una partición simple (`train_test_split`) posee demasiada varianza. Por ello, empleamos un remuestreo aleatorio con reemplazo:
-
-1.  **Generación Bootstrap**: Se crean submuestras del mismo tamaño que el dataset original ($N$), extrayendo pacientes con reemplazo.
-2.  **Out-of-Bag (OOB)**: Los pacientes que por probabilidad matemática ($\approx 36.8\%$) no entraron en la muestra de entrenamiento, se utilizan como conjunto de prueba estricto.
-3.  **Métricas**: El proceso se itera $X$ veces para calcular un vector de exactitudes (*accuracies*). Al final, se reporta la media estadística de las predicciones, reduciendo el ruido inherente de la matriz de datos y mostrando el rendimiento real esperado del modelo.
+## 2. Árboles de Decisión (Python / Scikit-Learn)
+Para obtener predicciones no lineales y altamente explicables visualmente para los médicos, se utiliza la librería Scikit-Learn.
+* **Entrenamiento**: El script `train_model.py` entrena un `DecisionTreeClassifier` utilizando los datos limpios (`dataset_clean.csv`).
+* **Explicabilidad Visual Restringida**: Se ha configurado el árbol siguiendo un tuning hecho con SciKit-Learn usando la función hecha en (`tuning.py`).
+* **Exportación Directa a UI**: Utilizando la librería `matplotlib`, el modelo guarda una visualización del mapa de decisión (`diagrama_arbol.png`) en alta definición (300 DPI) y lo inyecta automáticamente en la carpeta `/public` del frontend, enlazando directamente el ciclo de entrenamiento con la UI.
+* **Persistencia**: El modelo se guarda serializado usando `joblib` (`decision_tree_model.pkl`) para poder predecir sobre nuevos pacientes sin tener que reentrenar.

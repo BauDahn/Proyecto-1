@@ -1,16 +1,18 @@
-# React + Vite
+# Frontend: Interfaz de Predicción Vascular
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este directorio contiene la aplicación cliente del proyecto, diseñada para ser utilizada por el personal médico. 
 
-Currently, two official plugins are available:
+## Stack Tecnológico
+La aplicación está construida utilizando herramientas modernas para garantizar un rendimiento óptimo y un desarrollo ágil:
+* **React (v19)**: Biblioteca principal para la construcción de interfaces de usuario.
+* **Vite (v8)**: Entorno de desarrollo y empaquetador ultrarrápido.
+* **Tailwind CSS (v4)**: Framework de utilidades CSS para un diseño responsivo y moderno.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Características Principales
+* **Formulario**: Interfaz para capturar variables de entrada como edad, sexo, si es fumador y comorbilidades (HTA, IAM, ERC, etc.).
+* **Visualización de Explicabilidad**: El frontend renderiza de forma dinámica las visualizaciones generadas por el modelo predictivo del backend. Concretamente, el backend guarda gráficos estructurales (como `diagrama_arbol.png`) directamente en la carpeta `/public/plots` de este entorno para que React pueda mostrarlos al usuario de forma instantánea.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Instalación y Ejecución Local
+Para arrancar el entorno de desarrollo local:
+1.  Instala las dependencias: `npm install`
+2.  Inicia el servidor de Vite: `npm run dev`

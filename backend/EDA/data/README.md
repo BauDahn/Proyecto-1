@@ -1,6 +1,6 @@
 # Gestión de Datos - Proyecto Aneurismas
 
-Esta carpeta contiene el ciclo de vida de los datos del proyecto.
+Esta carpeta contiene los datos con los que se hicieron los modelos. La carpeta (`raw`) tiene los datos sin trabajar, y en (`processed`) tenemos los datos del árbol (`dataset_clean`) y los datos que se usaron en R (`pre_r_df`).
 
 ## Estructura
 - **/raw**: Datos originales del hospital (`RawData.csv`).
