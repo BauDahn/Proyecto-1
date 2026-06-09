@@ -1,6 +1,6 @@
 # Exploración de los datos
 library(readr)
-dataset_clean <- read_delim("../data/processed/pre_r_df.csv", 
+dataset_clean <- read_delim("../data/processed/pre_r_df.csv") 
 View(dataset_clean)
 
 # Summary del dataset
@@ -165,12 +165,47 @@ AUCs <- cv_model(TTO ~ Edad + Sexo + Fumador + comorb_grupos,
 
 mean(AUCs)
 
-# Encontrar el mejor umbral
-probabilidades <- predict(modelo_agrupado, newdata = test_data, type = "response")
+# Visualización de la curva AUC hecha con cross-validation
+dataset_clean <- as.data.frame(dataset_clean)
+set.seed(42)
+k <- 5
+folds <- sample(rep(1:k, length.out = nrow(dataset_clean))) # Índices de los pliegues aleatorios
+dataset_clean$predicciones_cv <- NA # Columna que almacena los resultados predichos
 
-objeto_roc <- roc(test_data$riesgo, probabilidades)
-mejor_umbral <- coords(objeto_roc, "best", ret = c("threshold", "sensitivity", "specificity"), best.method = "youden")
-print(mejor_umbral)
+for(i in 1:k) {
+  # Separamos en entrenamiento y test según el pliegue actual
+  train_data <- dataset_clean[folds != i, ]
+  test_data  <- dataset_clean[folds == i, ]
+  
+  # Entrenamos el modelo usando solo el conjunto de entrenamiento de este fold
+  modelo_fold <- glm(TTO ~ Edad + Sexo + Fumador + comorb_grupos, 
+                     data = train_data, 
+                     family = "binomial")
+  
+  # Predecimos sobre el test_data (los datos que este modelo NO conoce)
+  # Y guardamos el resultado exactamente en las posiciones del fold actual
+  dataset_clean$predicciones_cv[folds == i] <- predict(modelo_fold, 
+                                                       newdata = test_data, 
+                                                       type = "response")
+}
+
+objeto_roc <- roc(dataset_clean$TTO, dataset_clean$predicciones_cv)
+print(auc(objeto_roc))
+
+# Visualización de la gráfica
+grafico_roc <- ggroc(objeto_roc, legacy.axes = TRUE, color = "#4F46E5", linewidth = 1.2) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") + 
+  labs(
+    title = "Curva ROC (5-Fold Cross-Validation)",
+    subtitle = paste("AUC Global CV:", round(auc(objeto_roc), 3)),
+    x = "1 - Especificidad (Falsos Positivos)",
+    y = "Sensibilidad (Verdaderos Positivos)"
+  ) +
+  theme_minimal()
+
+ggsave("curva_roc.svg", plot = grafico_roc, width = 6, height = 4.5, dpi = 300)
+ggsave("curva_roc.png", plot = grafico_roc, width = 6, height = 4.5, dpi = 300, bg = "transparent")
+
 #Pesos del modelo
 pesos <- coef(modelo_agrupado)
 
@@ -178,5 +213,6 @@ tabla_pesos <- data.frame(
   Variable = names(pesos),
   Peso = as.numeric(pesos)
 )
+
 
 write.csv(tabla_pesos, "backend/src/models/model_weights.csv", row.names = FALSE)

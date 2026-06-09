@@ -1,5 +1,5 @@
 // Conexión con el backend
-const API_URL = "https://dkg5bcnx-8000.uks1.devtunnels.ms";
+const API_URL = "http://localhost:8000";
 
 export const obtenerPrediccion = async (datos) => {
   try {
